@@ -1,0 +1,74 @@
+version: '3'
+services:
+  namenode:
+    build: .
+    container_name: namenode
+    volumes:
+      - ./volumes/namenode:/hadoop/dfs/name
+      - ./conf/core-site.xml:/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    entrypoint: /hadoop/bin/namenode.sh
+    ports:
+      - "50070:50070"
+  datanode:
+    build: .
+    container_name: datanode
+    depends_on:
+      - namenode
+    ports:
+      - "50075:50075"
+    volumes:
+      - ./volumes/datanode:/hadoop/dfs/data
+      - ./conf/core-site.xml:/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    entrypoint: /hadoop/bin/datanode.sh
+
+  nodemanager:
+    build: .
+    container_name: nodemanager
+    depends_on:
+      - namenode
+      - datanode
+    ports:
+      - "8042:8042"
+    volumes:
+      - ./conf/core-site.xml:/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    entrypoint: /hadoop/bin/nodemanager.sh
+
+  resourcemanager:
+    build: .
+    container_name: resourcemanager
+    depends_on:
+      - namenode
+      - datanode
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./conf/core-site.xml:/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    entrypoint: /hadoop/bin/resourcemanager.sh
+
+  historyserver:
+    build: .
+    container_name: historyserver
+    depends_on:
+      - namenode
+      - datanode
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./volumes/historyserver:/hadoop/yarn/timeline
+      - ./conf/core-site.xml:/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    entrypoint: /hadoop/bin/historyserver.sh
